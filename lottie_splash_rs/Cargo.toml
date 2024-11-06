@@ -1,0 +1,17 @@
+[package]
+name = "lottie_splash_rs"
+version = "0.1.0"
+edition = "2021"
+description = "Lightweight splash screen window with a progress bar and a Lottie animated logo for Windows."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/yuyoyuppe/lottie_splash"
+
+[dependencies]
+num-derive = "0.4.2"
+num-traits = "0.2.19"
+thiserror = "1.0.66"
+
+[build-dependencies]
+anyhow = "1.0.92"
+reqwest = { version = "0.12.9", features = ["blocking"] }

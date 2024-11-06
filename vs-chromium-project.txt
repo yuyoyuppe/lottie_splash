@@ -1,0 +1,13 @@
+[SearchableFiles.include]
+*.hpp
+*.h
+*.cpp
+*.lua
+*.rs
+*.md
+*.toml
+
+[SearchableFiles.ignore]
+deps
+build
+found

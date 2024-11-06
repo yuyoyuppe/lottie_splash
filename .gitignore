@@ -1,0 +1,6 @@
+build/
+*.obj
+*_pp.asm
+target/
+found/
+*.ps1
