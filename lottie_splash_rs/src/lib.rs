@@ -154,7 +154,12 @@ unsafe impl Send for LottieSplash {}
 unsafe impl Sync for LottieSplash {}
 
 impl LottieSplash {
-    pub fn new(animation_data: &[u8], window_title: &str) -> Result<Self, Error> {
+    pub fn new(
+        animation_data: &[u8],
+        window_title: &str,
+        windows_width: u32,
+        windows_height: u32,
+    ) -> Result<Self, Error> {
         let mut error = lottie_splash_error::LOTTIE_SPLASH_SUCCESS;
 
         let window_title = CString::new(window_title)?;
@@ -165,8 +170,8 @@ impl LottieSplash {
                 animation_data.as_ptr() as *const c_char,
                 animation_data.len(),
                 window_title.as_ptr(),
-                0,
-                0,
+                windows_width,
+                windows_height,
                 &mut error as *mut _,
             )
         };

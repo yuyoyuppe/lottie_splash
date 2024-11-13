@@ -13,28 +13,28 @@ mod tests {
     #[test]
     fn test_basic_creation() -> Result<(), Error> {
         let animation_data = get_test_animation();
-        let _splash = LottieSplash::new(&animation_data, "Test Window")?;
+        let _splash = LottieSplash::new(&animation_data, "Test Window", 0, 0)?;
         Ok(())
     }
 
     #[test]
     fn test_invalid_animation() {
         let invalid_data = b"not a json";
-        let result = LottieSplash::new(invalid_data, "Test Window");
+        let result = LottieSplash::new(invalid_data, "Test Window", 0, 0);
         assert!(matches!(result, Err(Error::AnimationLoadFailed)));
     }
 
     #[test]
     fn test_empty_title() {
         let animation_data = get_test_animation();
-        let result = LottieSplash::new(&animation_data, "");
+        let result = LottieSplash::new(&animation_data, "", 0, 0);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_progress_bounds() -> Result<(), Error> {
         let animation_data = get_test_animation();
-        let splash = LottieSplash::new(&animation_data, "Test Window")?;
+        let splash = LottieSplash::new(&animation_data, "Test Window", 0, 0)?;
 
         // Valid bounds
         assert!(splash.set_progress(0.0).is_ok());
@@ -57,7 +57,7 @@ mod tests {
     #[test]
     fn test_status_message() -> Result<(), Error> {
         let animation_data = get_test_animation();
-        let splash = LottieSplash::new(&animation_data, "Test Window")?;
+        let splash = LottieSplash::new(&animation_data, "Test Window", 0, 0)?;
 
         assert!(splash.set_status_message("Testing...").is_ok());
         assert!(splash.set_status_message("").is_ok()); // Empty message should be valid
@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn test_window_lifecycle() -> Result<(), Error> {
         let animation_data = get_test_animation();
-        let splash = LottieSplash::new(&animation_data, "Test Window")?;
+        let splash = LottieSplash::new(&animation_data, "Test Window", 0, 0)?;
 
         thread::scope(|scope| {
             let handle: ScopedJoinHandle<Result<(), Error>> = scope.spawn(|| {
@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn test_status_message_updates() {
-        let splash = LottieSplash::new(&get_test_animation(), "Status Message Test").unwrap();
+        let splash = LottieSplash::new(&get_test_animation(), "Status Message Test", 0, 0)?;
 
         thread::scope(|scope| {
             let handle = scope.spawn(|| {
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn test_multiple_windows() {
         let handle1 = thread::spawn(|| {
-            let splash = LottieSplash::new(&get_test_animation(), "Window 1").unwrap();
+            let splash = LottieSplash::new(&get_test_animation(), "Window 1", 0, 0)?;
 
             // Run window for a short time
             thread::sleep(Duration::from_millis(500));
@@ -142,7 +142,7 @@ mod tests {
         thread::sleep(Duration::from_millis(100));
 
         let handle2 = thread::spawn(|| {
-            let splash = LottieSplash::new(&get_test_animation(), "Window 2").unwrap();
+            let splash = LottieSplash::new(&get_test_animation(), "Window 2", 0, 0)?;
 
             // Run window for a short time
             thread::sleep(Duration::from_millis(500));
@@ -162,11 +162,11 @@ mod tests {
         let animation_data = get_test_animation();
 
         // Create and immediately drop
-        let splash = LottieSplash::new(&animation_data, "Test Window").unwrap();
+        let splash = LottieSplash::new(&animation_data, "Test Window", 0, 0);
         drop(splash);
 
         // Should be able to create a new one
-        let result = LottieSplash::new(&animation_data, "Test Window");
+        let result = LottieSplash::new(&animation_data, "Test Window", 0, 0);
         assert!(result.is_ok());
     }
 }

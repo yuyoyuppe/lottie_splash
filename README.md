@@ -26,7 +26,7 @@ fn main() -> Result<(), Error> {
     let animation_data = std::fs::read("splash_animation.json")?;
 
     // Create the splash window
-    let splash = LottieSplash::new(&animation_data, "Installing...")?;
+    let splash = LottieSplash::new(&animation_data, "Installing...", 0, 0)?;
 
     // Run updates in a separate thread
     thread::scope(|scope| {
