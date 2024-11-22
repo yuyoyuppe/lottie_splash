@@ -1,6 +1,6 @@
 [submodule "deps/premake_scaffold"]
 	path = deps/premake_scaffold
-	url = git@github.com:yuyoyuppe/premake_scaffold.git
+	url = https://github.com/yuyoyuppe/premake_scaffold.git
 [submodule "src/thorvg"]
 	path = src/deps/thorvg
-	url = git@github.com:thorvg/thorvg.git
+	url = https://github.com/thorvg/thorvg.git
