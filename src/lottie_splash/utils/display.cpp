@@ -108,13 +108,16 @@ bool enable_transparency(HWND window) {
         return false;
 
     constexpr DWORD ACCENT_ENABLE_BLURBEHIND = 3;
+    constexpr DWORD ACCENT_ENABLE_ACRYLIC = 4;
     constexpr DWORD ENABLE_BLUR_BEHIND_MASKS = 0x20;
-    constexpr DWORD WCA_ACCENT_POLICY        = 19;
+    constexpr DWORD WCA_ACCENT_POLICY = 19;
 
-    ACCENTPOLICY accent = {.AccentState   = ACCENT_ENABLE_BLURBEHIND,
-                           .AccentFlags   = ENABLE_BLUR_BEHIND_MASKS,
-                           .GradientColor = 0,
-                           .AnimationId   = 0};
+    ACCENTPOLICY accent = {
+        .AccentState = is_windows_11_or_newer ? ACCENT_ENABLE_ACRYLIC : ACCENT_ENABLE_BLURBEHIND,
+        .AccentFlags = ENABLE_BLUR_BEHIND_MASKS,
+        .GradientColor = is_windows_11_or_newer ? 0x20FFFFFFUL : 0UL, // 0x20 = 32 alpha for acrylic
+        .AnimationId = 0
+    };
 
     WINCOMPATTR data = {.Attribute = WCA_ACCENT_POLICY, .Data = &accent, .DataSize = sizeof(accent)};
 
