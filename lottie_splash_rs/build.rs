@@ -4,23 +4,35 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+const CURRENT_VERSION: &str = "v0.1.0";
+
 fn get_latest_git_tag() -> Result<String> {
     let output = Command::new("git")
         .args(["describe", "--tags", "--abbrev=0"])
         .output()
         .context("Failed to run git command")?;
 
-    if !output.status.success() {
-        bail!(
-            "Git command failed: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
+    if output.status.success() {
+        let git_tag = String::from_utf8(output.stdout)
+            .context("Invalid UTF-8 in git tag")?
+            .trim()
+            .to_string();
+
+        if git_tag != CURRENT_VERSION {
+            bail!(
+                "Git tag '{}' doesn't match the expected version '{}'",
+                git_tag,
+                CURRENT_VERSION
+            );
+        }
+        return Ok(git_tag);
     }
 
-    Ok(String::from_utf8(output.stdout)
-        .context("Invalid UTF-8 in git tag")?
-        .trim()
-        .to_string())
+    println!(
+        "cargo:warning=No git tags found, falling back to version {}",
+        CURRENT_VERSION
+    );
+    Ok(CURRENT_VERSION.to_string())
 }
 
 fn get_library_name() -> &'static str {
