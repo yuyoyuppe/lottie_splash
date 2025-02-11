@@ -83,7 +83,7 @@ bool SplashWindow::init_thorvg(const char * lottie_data, size_t data_size) noexc
     _memdc.reset(CreateCompatibleDC(_hdc.get()));
     SelectObject(_memdc.get(), bitmap);
 
-    _canvas = tvg::SwCanvas::gen();
+    _canvas.reset(tvg::SwCanvas::gen());
     if(!_canvas)
         return false;
 
@@ -206,7 +206,7 @@ bool SplashWindow::init_window(const wchar_t * window_title) noexcept {
 
     using namespace utils;
 
-    enable_transparency(_hwnd.get());
+    enable_transparency(_hwnd.get(), 0.25f);
     enable_rounded_corners(_hwnd.get());
     enable_shadow(_hwnd.get());
 
@@ -406,6 +406,16 @@ bool SplashWindow::render() noexcept {
     }
 
     _canvas->remove();
+#ifndef THORVG_GL_RASTER_SUPPORT
+    // Create a solid black brush with 75% transparency
+    const HBRUSH        brush = CreateSolidBrush(RGB(0, 0, 0));
+    const BLENDFUNCTION blend = {.BlendOp = AC_SRC_OVER};
+
+    // Fill the background
+    RECT rect = {0, 0, static_cast<LONG>(_window_width * _dpi_scale), static_cast<LONG>(_window_height * _dpi_scale)};
+    FillRect(_memdc.get(), &rect, brush);
+    DeleteObject(brush);
+#endif
 
     auto scene = tvg::Scene::gen();
     if(!scene)
@@ -493,7 +503,7 @@ bool SplashWindow::render() noexcept {
         fill->fill(255, 255, 255);
         overlay_scene->push(std::move(fill));
 
-        const char8_t * GETTING_READY_MESSAGE = u8"Getting Ready…";
+        const char8_t * GETTING_READY_MESSAGE = u8"Getting Ready...";
         if(auto getting_ready_text = tvg::Text::gen()) {
             getting_ready_text->font(_loaded_font_family.c_str(), px_to_pt(15.f * _dpi_scale));
             getting_ready_text->text(reinterpret_cast<const char *>(GETTING_READY_MESSAGE));

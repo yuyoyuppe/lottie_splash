@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn test_status_message_updates() {
+    fn test_status_message_updates() -> Result<(), Error> {
         let splash = LottieSplash::new(&get_test_animation(), "Status Message Test", 0, 0)?;
 
         thread::scope(|scope| {
@@ -125,6 +125,8 @@ mod tests {
             handle.join().unwrap()
         })
         .unwrap();
+
+        Ok(())
     }
 
     #[test]

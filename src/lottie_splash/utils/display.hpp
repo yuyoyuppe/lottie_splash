@@ -8,6 +8,7 @@ bool                enable_dpi_awareness();
 std::pair<int, int> primary_monitor_dims();
 bool                enable_rounded_corners(HWND window);
 bool                enable_shadow(HWND window);
-bool                enable_transparency(HWND window);
+bool                enable_transparency(HWND window, const float transparency);
+bool                set_background_color(HWND window, DWORD color);
 inline float        get_dpi_scale() { return static_cast<float>(GetDpiForSystem()) / 96.0f; }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "lottie_splash_rs"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Lightweight splash screen window with a progress bar and a Lottie animated logo for Windows."
 license = "MIT"

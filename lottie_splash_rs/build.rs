@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-const CURRENT_VERSION: &str = "v0.1.0";
+const CURRENT_VERSION: &str = "v0.1.1";
 
 fn get_latest_git_tag() -> Result<String> {
     let output = Command::new("git")

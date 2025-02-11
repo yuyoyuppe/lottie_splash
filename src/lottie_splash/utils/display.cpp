@@ -3,19 +3,9 @@
 #include <dwmapi.h>
 #include <winternl.h>
 
-namespace {
-struct ACCENTPOLICY {
-    DWORD AccentState;
-    DWORD AccentFlags;
-    DWORD GradientColor;
-    DWORD AnimationId;
-};
+#include <algorithm>
 
-struct WINCOMPATTR {
-    DWORD Attribute;
-    PVOID Data;
-    ULONG DataSize;
-};
+namespace {
 
 // This method works consistently regardless whether the app has a manifest or not.
 const bool is_windows_11_or_newer = [] {
@@ -84,44 +74,66 @@ bool enable_shadow(HWND window) {
     return SUCCEEDED(DwmExtendFrameIntoClientArea(window, &margins));
 }
 
-bool enable_transparency(HWND window) {
+bool enable_transparency(HWND window, const float transparency) {
     if(!window)
         return false;
 
-#ifdef THORVG_GL_RASTER_SUPPORT
-    DWORD ex_style = GetWindowLongW(window, GWL_EXSTYLE);
-    ex_style |= WS_EX_LAYERED;
-    if(!SetWindowLongW(window, GWL_EXSTYLE, ex_style))
-        return false;
-
-    return SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
-#else
     const HMODULE user32 = GetModuleHandleW(L"user32.dll");
     if(!user32)
         return false;
 
-    using SetWindowCompositionAttributeFunc = BOOL(WINAPI *)(HWND, WINCOMPATTR *);
+    using SetWindowCompositionAttributeFunc = BOOL(WINAPI *)(HWND, void *);
     const auto SetWindowCompositionAttribute =
       reinterpret_cast<SetWindowCompositionAttributeFunc>(GetProcAddress(user32, "SetWindowCompositionAttribute"));
 
     if(!SetWindowCompositionAttribute)
         return false;
 
-    constexpr DWORD ACCENT_ENABLE_BLURBEHIND = 3;
-    constexpr DWORD ACCENT_ENABLE_ACRYLIC = 4;
-    constexpr DWORD ENABLE_BLUR_BEHIND_MASKS = 0x20;
-    constexpr DWORD WCA_ACCENT_POLICY = 19;
+    constexpr DWORD ACCENT_ENABLE_ACRYLIC    = 4;
+    constexpr DWORD ENABLE_BLUR_BEHIND_MASKS = 0x10;
 
-    ACCENTPOLICY accent = {
-        .AccentState = is_windows_11_or_newer ? ACCENT_ENABLE_ACRYLIC : ACCENT_ENABLE_BLURBEHIND,
-        .AccentFlags = ENABLE_BLUR_BEHIND_MASKS,
-        .GradientColor = is_windows_11_or_newer ? 0x20FFFFFFUL : 0UL, // 0x20 = 32 alpha for acrylic
-        .AnimationId = 0
+    struct AccentPolicy {
+        int   AccentState;
+        DWORD AccentFlags;
+        DWORD GradientColor;
+        DWORD AnimationId;
     };
 
-    WINCOMPATTR data = {.Attribute = WCA_ACCENT_POLICY, .Data = &accent, .DataSize = sizeof(accent)};
+    struct WindowCompositionAttribData {
+        DWORD  Attribute;
+        PVOID  pvData;
+        SIZE_T cbData;
+    };
+
+    const uint8_t alpha = static_cast<uint8_t>(std::clamp(transparency, 0.0f, 1.0f) * 255.0f);
+    // Black color with custom alpha
+    const DWORD gradientColor = (static_cast<DWORD>(alpha) << 24) | 0x000000;
+
+    AccentPolicy accent = {.AccentState   = ACCENT_ENABLE_ACRYLIC,
+                           .AccentFlags   = ENABLE_BLUR_BEHIND_MASKS,
+                           .GradientColor = gradientColor,
+                           .AnimationId   = 0};
+
+    constexpr DWORD             WCA_ACCENT_POLICY = 19;
+    WindowCompositionAttribData data = {.Attribute = WCA_ACCENT_POLICY, .pvData = &accent, .cbData = sizeof(accent)};
 
     return SetWindowCompositionAttribute(window, &data);
-#endif
+}
+
+bool set_background_color(HWND window, DWORD color) {
+    if(!window)
+        return false;
+
+    if(is_windows_11_or_newer)
+        return true; // Already handled in enable_transparency
+
+    DWORD ex_style = GetWindowLongW(window, GWL_EXSTYLE);
+    ex_style |= WS_EX_LAYERED;
+    if(!SetWindowLongW(window, GWL_EXSTYLE, ex_style))
+        return false;
+
+    // color is in format 0xAARRGGBB
+    BYTE alpha = (color >> 24) & 0xFF;
+    return SetLayeredWindowAttributes(window, 0, alpha, LWA_ALPHA);
 }
 }
