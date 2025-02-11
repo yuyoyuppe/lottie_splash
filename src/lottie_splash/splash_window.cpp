@@ -98,7 +98,7 @@ bool SplashWindow::init_thorvg(const char * lottie_data, size_t data_size) noexc
 
 
 bool SplashWindow::init_thorvg_common(const char * lottie_data, size_t data_size) noexcept {
-    _logo_animation = tvg::Animation::gen();
+    _logo_animation.reset(tvg::Animation::gen());
     if(!_logo_animation)
         return false;
 
@@ -117,7 +117,7 @@ bool SplashWindow::init_thorvg_common(const char * lottie_data, size_t data_size
     const float shiftY = 56.f * _dpi_scale;
     logo_picture->translate(shiftX, shiftY);
 
-    _canvas->push(tvg::cast(logo_picture));
+    _canvas->push(logo_picture);
 
     _start_time = std::chrono::steady_clock::now();
 
@@ -405,7 +405,7 @@ bool SplashWindow::render() noexcept {
         }
     }
 
-    _canvas->clear(true, true);
+    _canvas->remove();
 
     auto scene = tvg::Scene::gen();
     if(!scene)
@@ -431,7 +431,7 @@ bool SplashWindow::render() noexcept {
     if(!dup_logo_picture)
         return false;
 
-    if(scene->push(tvg::cast(std::move(dup_logo_picture))) != tvg::Result::Success)
+    if(scene->push(std::move(dup_logo_picture)) != tvg::Result::Success)
         return false;
 
     if(_current_state.progress > 0.0f || !_current_state.status_message.empty()) {
