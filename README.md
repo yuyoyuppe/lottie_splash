@@ -13,6 +13,7 @@ A lightweight library for displaying animated splash screens using Lottie animat
 
 ## TODO
 - Allow configuring progress bar, logo and text styles.
+- Use something other than the current git tag-based verification in build.rs, as we're currently relying on cargo unspecifying behavior of fetching tags of git deps.
 
 ## Usage (Rust)
 
